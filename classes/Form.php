@@ -54,15 +54,15 @@ class Form extends Block
         if (!$this->fields->checkHoneypot($this->honeypotId())) {
             $this->setError("Trapped into honeypot");
         };
-        
+
         $this->runProcess();
     }
 
     /**
      * Set default values to new form block (Run if Block create)
-     * 
+     *
      * @param string $path
-     * 
+     *
      * @return array
      */
     private function getDefault(string $path, string $postfix = ""): array
@@ -82,9 +82,9 @@ class Form extends Block
 
     /**
      * Set default values to new form block (Run if Block create)
-     * 
+     *
      * @param array $params
-     * 
+     *
      * @return array
      */
     private function setDefault(array $params): array
@@ -100,29 +100,29 @@ class Form extends Block
             if(count($defaults = $this->getDefault(site()->kirby()->root('config') . "/", $postfix)) == 0){
                 $defaults = $this->getDefault(__DIR__ . "/../config/", $postfix);
             };
-        
+
             if (!isset($defaults[0]['content'])) {
                 throw new Exception("Getting defaults failed. Check formblock_default*.json in config folder.");
             }
 
             $params['content'] =  $defaults[0]['content'];
         }
-        
+
         return $params;
     }
 
     /**
      * Validate Backend
-     * 
+     *
      * @param array $formdata
-     * 
+     *
      * @return bool
      */
     private function validateBackend (array $formdata): bool
     {
         $slugs = [];
 
-        foreach ($formdata as $field) {            
+        foreach ($formdata as $field) {
             array_push($slugs, $field['content']['slug']);
         }
 
@@ -136,9 +136,9 @@ class Form extends Block
 
     /**
      * Parse to String if needed
-     * 
+     *
      * @param mixed $value
-     * 
+     *
      * @return string
      */
     private function parseString($value): string
@@ -155,10 +155,10 @@ class Form extends Block
      *
      * @param string $slug Name of the formfield (returns formfield object)
      * @param string|array $attrs Specific Value (returns array with specific value)
-     * 
+     *
      * @return array|object
      */
-    public function field(string $slug, $attrs= NULL)
+    public function fieldByName(string $slug, $attrs= NULL)
     {
         if (is_null($attrs)) {
             return $this->fields()->$slug();
@@ -180,7 +180,7 @@ class Form extends Block
 
     /**
      * Formfields as Array
-     * 
+     *
      * @param string|null $attrs Set attribute in array (instead field object)
      *
      * @return array|object
@@ -193,16 +193,16 @@ class Form extends Block
         $fields = [];
         foreach ($this->fields() as $field) {
             $fieldSlug = $field->slug()->toString();
-            $fields[$fieldSlug] = $this->field($fieldSlug, $attrs);
+            $fields[$fieldSlug] = $this->fieldByName($fieldSlug, $attrs);
         }
         return $fields;
     }
 
     /**
      * Get formdata with custom Placeholder
-     * 
+     *
      * @param string $attr Defines which atribute (value/label) of the placeholder should returned
-     * 
+     *
      * @return array
      */
     public function fieldsWithPlaceholder($attr = 'value'): array
@@ -222,7 +222,7 @@ class Form extends Block
 
     /**
      * Get honeypot name
-     * 
+     *
      * @return string
      */
     public function honeypotId(): string
@@ -242,7 +242,7 @@ class Form extends Block
 
     /**
      * Check if form is filled
-     * 
+     *
      * @return bool
      */
     public function isFilled(): bool
@@ -252,7 +252,7 @@ class Form extends Block
 
     /**
      * Check if all field filled right
-     * 
+     *
      * @return bool
      */
     public function isValid(): bool
@@ -262,7 +262,7 @@ class Form extends Block
 
     /**
      * Check if error occurs
-     * 
+     *
      * @return bool
      */
     public function isFatal(): bool
@@ -272,7 +272,7 @@ class Form extends Block
 
     /**
      * Check if request send successfully
-     * 
+     *
      * @return bool
      */
     public function isSuccess(): bool
@@ -282,7 +282,7 @@ class Form extends Block
 
     /**
      * Get error fields
-     * 
+     *
      * @param string|NULL $separator Unset returns Array
      * @return string|array
      */
@@ -290,10 +290,10 @@ class Form extends Block
     {
         return $this->fields->errorFields($separator);
     }
-    
+
     /**
      * Check if form could shown
-     * 
+     *
      * @return bool
      */
     public function showForm(): bool
@@ -309,9 +309,9 @@ class Form extends Block
     /**
      * Get Messages
      *
-     * @param string $key 
+     * @param string $key
      * @param array $replaceArray Additional array for replacing
-     * 
+     *
      * @return string
      */
     public function message($key, $replaceArray = []): string
@@ -354,7 +354,7 @@ class Form extends Block
             //Redirect if set in panel
             if ($this->redirect()->isTrue())
                 return go($this->success_url());
-            
+
             return $this->message('success_message');
         }
 
@@ -373,10 +373,10 @@ class Form extends Block
     {
         $blockId = ($this->id());
         $container = $this->parent()->drafts()->find($blockId);
-        
+
         if (!is_null($container))
             return $container;
-        
+
         $this->kirby()->impersonate('kirby');
 
         //Create page - not existing
@@ -483,7 +483,7 @@ class Form extends Block
             ];
             //TODO: After Notify
 
-            if ($replyTo = $this->field('email', 'value')) {
+            if ($replyTo = $this->fieldByName('email', 'value')) {
                 $emailData['replyTo'] = $replyTo;
             }
 
@@ -494,7 +494,7 @@ class Form extends Block
         } catch (\Throwable $error) {
             $this->setError("Error sending notification: " . $error->getMessage());
         }
-  
+
     }
 
     /**
@@ -523,7 +523,7 @@ class Form extends Block
             //TODO: Before Confirmation
             site()->kirby()->email([
                 'from' => option('microman.formblock.from_email'),
-                'to' => $this->field('email', 'value'),
+                'to' => $this->fieldByName('email', 'value'),
                 'replyTo' => $reply,
                 'subject' => $this->message('confirm_subject'),
                 'body' => [
@@ -534,7 +534,7 @@ class Form extends Block
 
             //TODO: After Confirmation
             $this->updateRequest(['confirm-send' => date('Y-m-d H:i:s', time())]);
-            
+
         } catch (\Throwable $error) {
             $this->setError("Error sending confirmation: " . $error->getMessage());
         }
@@ -545,7 +545,7 @@ class Form extends Block
      *
      * @param string $error Error message
      * @param bool $save Save error message to request
-     * 
+     *
      * @return string
      */
     public function setError($error = "An error occured", $save = true): string
