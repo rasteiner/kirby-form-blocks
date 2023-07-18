@@ -576,12 +576,16 @@ class Form extends Block
 
             // Send notification mail
             if (!option('microman.formblock.disable_notify') && !$this->isFatal()) {
-                $this->sendNotification();
+                if($this->enable_notify()?->toBool()) {
+                    $this->sendNotification();
+                }
             }
 
             // Send notification mail
-            if (!option('microman.formblock.disable_confirmation') && !$this->isFatal()) {
-                $this->sendConfirmation();
+            if (!option('microman.formblock.disable_confirm') && !$this->isFatal()) {
+                if($this->enable_confirm()?->toBool()) {
+                    $this->sendConfirmation();
+                }
             }
 
         }
